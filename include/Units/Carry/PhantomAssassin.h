@@ -1,4 +1,4 @@
-#pragma inse
+#pragma once
 
 #include <memory>
 #include <string>
