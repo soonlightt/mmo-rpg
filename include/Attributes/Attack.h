@@ -8,6 +8,6 @@ class Attack {
  public:
   explicit Attack(int initialDamage = 10);
 
-  int getAttack() const;
+  int getValue() const;
   int calculateDamage(const Armor& targetArmor) const;
 };

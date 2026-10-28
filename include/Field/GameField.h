@@ -4,6 +4,7 @@
 
 #include "Units/Unit.h"
 
+class UnitFactory;
 class GameField {
  private:
   int width;
@@ -26,6 +27,7 @@ class GameField {
   size_t getUnitsCount() const;
   size_t getMaxUnits() const;
 
+  bool spawnUnit(const UnitFactory& factory, int subType, int x, int y);
   bool addUnit(std::unique_ptr<Unit> unit);
   bool removeUnit(int x, int y);
   Unit* getUnitAt(int x, int y) const;

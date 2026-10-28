@@ -2,6 +2,8 @@
 
 #include <algorithm>
 
+#include "Factories/UnitFactory.h"
+
 GameField::GameField(int w, int h, size_t maxU)
     : width(w > 0 ? w : 15), height(h > 0 ? h : 15), maxUnits(maxU) {}
 
@@ -24,6 +26,11 @@ bool GameField::addUnit(std::unique_ptr<Unit> unit) {
 
   units.push_back(std::move(unit));
   return true;
+}
+
+bool GameField::spawnUnit(const UnitFactory& factory, int subType, int x, int y) {
+  auto unit = factory.createUnit(subType, x, y);
+  return addUnit(std::move(unit));
 }
 
 bool GameField::removeUnit(int x, int y) {

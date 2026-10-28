@@ -5,7 +5,7 @@
 
 class UnitFactory {
  public:
-  virtual std::unique_ptr<Unit> createUnit(int subTyoe, int x, int y) const = 0;
+  virtual std::unique_ptr<Unit> createUnit(int subType, int x, int y) const = 0;
 
   virtual ~UnitFactory() = default;
 };

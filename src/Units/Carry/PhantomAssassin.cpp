@@ -4,7 +4,7 @@ PhantomAssassin::PhantomAssassin(int x, int y) : Carry(x, y, Health(120), Armor(
 
 std::string PhantomAssassin::getType() const { return "PhantomAssassin"; }
 
-char PhantomAssassin::getSymbol() const { return 'PA'; }
+char PhantomAssassin::getSymbol() const { return 'P'; }
 
 std::unique_ptr<Unit> PhantomAssassin::clone() const {
   return std::make_unique<PhantomAssassin>(*this);
