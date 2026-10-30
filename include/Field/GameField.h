@@ -1,10 +1,12 @@
 #pragma once
+#include <algorithm>
 #include <memory>
 #include <vector>
 
+#include "Factories/UnitFactory.h"
+#include "Field/GameFieldIterator.h"
 #include "Units/Unit.h"
 
-class UnitFactory;
 class GameField {
  private:
   int width;
@@ -16,20 +18,24 @@ class GameField {
   explicit GameField(int w = 15, int h = 15, size_t maxU = 20);
   ~GameField() = default;
 
-  GameField(const GameField&) = delete;
-  GameField& operator=(const GameField&) = delete;
+  GameFieldIterator begin() const;
+  GameFieldIterator end() const;
 
   GameField(GameField&&) noexcept = default;
   GameField& operator=(GameField&&) noexcept = default;
 
+  GameField(const GameField& other);
+  GameField& operator=(const GameField& other);
+
   int getWidth() const;
   int getHeight() const;
-  size_t getUnitsCount() const;
+  size_t size() const;
   size_t getMaxUnits() const;
 
   bool spawnUnit(const UnitFactory& factory, int subType, int x, int y);
   bool addUnit(std::unique_ptr<Unit> unit);
   bool removeUnit(int x, int y);
-  Unit* getUnitAt(int x, int y) const;
+  bool empty() const;
+  Unit* getUnit(int x, int y) const;
   void clear();
 };
