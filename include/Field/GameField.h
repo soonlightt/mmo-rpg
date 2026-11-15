@@ -1,6 +1,6 @@
 #pragma once
-#include <algorithm>
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "Factories/UnitFactory.h"
@@ -21,11 +21,11 @@ class GameField {
   GameFieldIterator begin() const;
   GameFieldIterator end() const;
 
-  GameField(GameField&&) noexcept = default;
-  GameField& operator=(GameField&&) noexcept = default;
-
   GameField(const GameField& other);
-  GameField& operator=(const GameField& other);
+  GameField& operator=(GameField other);
+  friend void swap(GameField& first, GameField& second) noexcept;
+
+  GameField(GameField&&) noexcept = default;
 
   int getWidth() const;
   int getHeight() const;

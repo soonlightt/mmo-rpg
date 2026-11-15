@@ -1,5 +1,7 @@
 #include "Field/GameField.h"
 
+#include <algorithm>
+
 #include "Factories/UnitFactory.h"
 
 GameField::GameField(int w, int h, size_t maxU)
@@ -16,20 +18,16 @@ GameField::GameField(const GameField& other)
   }
 }
 
-GameField& GameField::operator=(const GameField& other) {
-  if (this == &other) return *this;
+void swap(GameField& first, GameField& second) noexcept {
+  using std::swap;
+  swap(first.width, second.width);
+  swap(first.height, second.height);
+  swap(first.maxUnits, second.maxUnits);
+  swap(first.units, second.units);
+}
 
-  units.clear();
-
-  width = other.width;
-  height = other.height;
-  maxUnits = other.maxUnits;
-
-  for (const auto& u : other.units) {
-    if (u) {
-      units.push_back(u->clone());
-    }
-  }
+GameField& GameField::operator=(GameField other) {
+  swap(*this, other);
   return *this;
 }
 
