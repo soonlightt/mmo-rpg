@@ -6,8 +6,12 @@
 #include "Attributes/Armor.h"
 #include "Attributes/Attack.h"
 #include "Attributes/Health.h"
+#include "Observer/IObservable.h"
 
-class Unit {
+class Unit : public IObservable {
+ private:
+  static int id;
+
  protected:
   int x;
   int y;
@@ -19,6 +23,7 @@ class Unit {
   Unit(int startX, int startY, const Health& h, const Armor& arm, const Attack& att);
   virtual ~Unit() = default;
 
+  int getId() const;
   int getX() const;
   int getY() const;
   void setPosition(int newX, int newY);
@@ -28,6 +33,7 @@ class Unit {
   const Attack& getAttack() const;
 
   virtual void takeDamage(int inComingDamage);
+  virtual void heal(int amount);
   virtual bool isAlive() const;
 
   virtual std::string getType() const = 0;
