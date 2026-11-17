@@ -10,4 +10,6 @@ class Attack {
 
   int getValue() const;
   int calculateDamage(const Armor& targetArmor) const;
+
+  void modifyDamage(int delta);
 };

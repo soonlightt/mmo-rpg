@@ -10,3 +10,5 @@ int Armor::reduceDamage(int damage) const {
   if (damage < 0) return 0;
   return std::max(0, damage - value);
 }
+
+void Armor::modifyValue(int delta) { value = std::max(0, value + delta); }

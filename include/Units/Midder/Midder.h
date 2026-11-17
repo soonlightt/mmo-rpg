@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #include "Units/Unit.h"
 
 class Midder : public Unit {
@@ -8,4 +10,6 @@ class Midder : public Unit {
       : Unit(x, y, h, arm, att) {}
 
   virtual ~Midder() = default;
+
+  std::string getRole() const override { return "Midder"; }
 };

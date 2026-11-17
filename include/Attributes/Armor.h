@@ -9,4 +9,6 @@ class Armor {
 
   int getValue() const;
   int reduceDamage(int damage) const;
+
+  void modifyValue(int delta);
 };

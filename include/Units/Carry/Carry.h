@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #include "Units/Unit.h"
 
 class Carry : public Unit {
@@ -8,4 +10,6 @@ class Carry : public Unit {
       : Unit(x, y, h, arm, att) {}
 
   virtual ~Carry() = default;
+
+  std::string getRole() const override { return "Carry"; }
 };

@@ -1,9 +1,9 @@
 #include "Units/Unit.h"
 
-int Unit::id = 1;
+int Unit::nextId = 1;
 
 Unit::Unit(int startX, int startY, const Health& h, const Armor& arm, const Attack& att)
-    : x(startX), y(startY), health(h), armor(arm), attack(att) {}
+    : x(startX), y(startY), health(h), armor(arm), attack(att), id(nextId++) {}
 
 int Unit::getId() const { return id; }
 
@@ -23,6 +23,8 @@ const Armor& Unit::getArmor() const { return armor; }
 const Attack& Unit::getAttack() const { return attack; }
 
 void Unit::takeDamage(int inComingDamage) {
+  if (!isAlive() || inComingDamage <= 0) return;
+
   int effectiveDamage = armor.reduceDamage(inComingDamage);
   health.decrease(effectiveDamage);
 
@@ -41,3 +43,6 @@ void Unit::heal(int amount) {
 }
 
 bool Unit::isAlive() const { return !health.isZero(); }
+
+void Unit::modifyArmor(int delta) { armor.modifyValue(delta); }
+void Unit::modifyAttack(int delta) { attack.modifyDamage(delta); }

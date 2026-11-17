@@ -10,11 +10,12 @@
 
 class Unit : public IObservable {
  private:
-  static int id;
+  static int nextId;
 
  protected:
   int x;
   int y;
+  int id;
   Health health;
   Armor armor;
   Attack attack;
@@ -39,4 +40,9 @@ class Unit : public IObservable {
   virtual std::string getType() const = 0;
   virtual char getSymbol() const = 0;
   virtual std::unique_ptr<Unit> clone() const = 0;
+
+  void modifyAttack(int delta);
+  void modifyArmor(int delta);
+
+  virtual std::string getRole() const = 0;
 };
