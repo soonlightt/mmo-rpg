@@ -1,85 +1,83 @@
-#include <iostream>
-#include <memory>
-#include <string>
-
-#include "Field/GameField.h"
-#include "Units/Carry/Lifestealer.h"
-#include "Units/Carry/PhantomAssassin.h"
-#include "Units/Midder/Invoker.h"
-#include "Units/Support/Dazzle.h"
-
-void printSeparator(const std::string& title) {
-  std::cout << "\n==================================================\n";
-  std::cout << "  " << title << "\n";
-  std::cout << "==================================================\n";
-}
+#include "Controller/GameController.h"
+#include "Factories/CarryFactory.h"
+#include "Factories/MidderFactory.h"
+#include "Factories/SupportFactory.h"
+#include "NeutralObjects/HealingFountain.h"
+#include "NeutralObjects/PowerRune.h"
+#include "NeutralObjects/Teleport.h"
+#include "NeutralObjects/Trap.h"
 
 int main() {
-  printSeparator("SCRIPT 1: Fill field and basic operation");
+  std::cout << "=========================================================\n";
+  std::cout << "  MMO RPG: FULL SYSTEM DEMO (OBSERVER, PROXY, STRATEGY)\n";
+  std::cout << "=========================================================\n\n";
 
-  GameField field(15, 15, 20);
-  std::cout << "Create field: " << field.getWidth() << "x" << field.getHeight()
-            << ", лимит юнитов: " << field.getMaxUnits() << "\n";
+  GameController game(15, 15, 20, 0, 0, 500, 10, 200);
+  auto base = game.getBase();
+  auto& terrainMap = game.getTerrainMap();
+  auto& field = game.getField();
 
-  field.addUnit(std::make_unique<PhantomAssassin>(1, 2));
-  field.addUnit(std::make_unique<Invoker>(3, 4));
-  field.addUnit(std::make_unique<Dazzle>(5, 6));
+  CarryFactory carryFactory;
+  MidderFactory midderFactory;
+  SupportFactory supportFactory;
 
-  std::cout << "Added units: " << field.size() << "\n";
-  std::cout << "Is field empty? " << (field.empty() ? "Yes" : "No") << "\n";
+  std::cout << "--- SCENARIO 1: Base & Spawning Units via Factories ---\n";
+  std::cout << "Base initial resources: " << base->getResources()
+            << ", max units: " << base->getMaxUnits() << "\n";
 
-  std::cout << "\nList units on the field:\n";
-  for (auto& unit : field) {
-    std::cout << "  - [" << unit.getSymbol() << "] " << unit.getType() << " on (" << unit.getX()
-              << ", " << unit.getY() << ")"
-              << " | HP: " << unit.getHealth().getValue()
-              << " | Armor: " << unit.getArmor().getValue()
-              << " | Attack: " << unit.getAttack().getValue() << "\n";
+  game.spawnUnit(carryFactory, 2, 1, 0, 50);
+  game.spawnUnit(midderFactory, 2, 3, 1, 50);
+  game.spawnUnit(supportFactory, 1, 4, 1, 50);
+
+  terrainMap.addNeutralObject(std::make_unique<PowerRune>(2, 0));
+  terrainMap.addNeutralObject(std::make_unique<Trap>(3, 0));
+  terrainMap.addNeutralObject(std::make_unique<HealingFountain>(3, 2));
+  terrainMap.addNeutralObject(
+      std::make_unique<Teleport>(4, 0, 15, 15, &terrainMap, base.get(), &field));
+
+  game.printWorld();
+
+  std::cout << "\n--- SCENARIO 2: Terrain Effects & TerrainProxy Blocking ---\n";
+
+  Unit* pa = field.getUnit(1, 0);
+  if (pa) {
+    std::cout << "PhantomAssassin on Plains (1, 0) -> Attack: " << pa->getAttack().getValue()
+              << " (includes +10 Plains Carry bonus)\n";
   }
 
-  printSeparator("SCRIPT 2: Deep copy and independence of a copy");
+  std::cout << "Attempting to move PhantomAssassin onto Mountains at (1, 6)...\n";
+  game.moveUnit(1, 0, 1, 6);
 
-  std::cout << "Creating a full copy of the field: GameField copyField = field;\n";
-  GameField copyField = field;
+  std::cout << "\n--- SCENARIO 3: Neutral Objects & Overloaded Operators (+, !) ---\n";
 
-  std::cout << "Size original: " << field.size() << ", size of a copy: " << copyField.size()
-            << "\n";
+  game.moveUnit(1, 0, 2, 0);
+  NeutralObject* rune = terrainMap.getNeutralObjectAt(2, 0);
+  std::cout << "Is PowerRune depleted (operator!)? "
+            << (rune == nullptr ? "Yes (deactivated)" : "No") << "\n";
 
-  Unit* copiedInvoker = copyField.getUnit(3, 4);
-  Unit* originalInvoker = field.getUnit(3, 4);
+  game.moveUnit(2, 0, 3, 0);
 
-  if (copiedInvoker && originalInvoker) {
-    std::cout << "\nDealing 50 dmg to Invoker on the copied field...\n";
-    copiedInvoker->takeDamage(50);
+  Unit* invoker = field.getUnit(3, 1);
+  if (invoker) {
+    invoker->takeDamage(60);
+  }
+  game.moveUnit(3, 1, 3, 2);
 
-    std::cout << "Original field Invoker HP: " << originalInvoker->getHealth().getValue() << "\n";
-    std::cout << "Copied field Invoker HP:   " << copiedInvoker->getHealth().getValue() << "\n";
+  game.moveUnit(3, 0, 4, 0);
 
-    if (originalInvoker->getHealth().getValue() != copiedInvoker->getHealth().getValue()) {
-      std::cout << ">> SUCCESS: The copy is completely independent of the original!\n";
-    }
+  game.printWorld();
+
+  std::cout << "\n--- SCENARIO 4: Combat & Observer Notification on Unit Death ---\n";
+
+  game.moveUnit(3, 2, 3, 1);
+
+  Unit* dazzle = field.getUnit(4, 1);
+  while (dazzle && dazzle->isAlive()) {
+    game.attackUnit(3, 1, 4, 1);
   }
 
-  printSeparator("SCRIPT 3: Move semantics and mass action");
+  std::cout << "\nFinal alive units on field: " << field.size() << "\n";
+  std::cout << "=== All scenarios completed successfully! ===\n";
 
-  std::cout << "Moving field";
-  GameField movedField = std::move(field);
-
-  std::cout << "Original field size after move: " << field.size() << " (emptied)\n";
-  std::cout << "Moved field size:               " << movedField.size() << "\n";
-
-  std::cout << "\nMass action with help iterator: dealing 15 dmg to all units on movedField:\n";
-  for (auto& unit : movedField) {
-    unit.takeDamage(15);
-    std::cout << "  - " << unit.getType()
-              << " took damage, remaining HP: " << unit.getHealth().getValue()
-              << " (alive: " << (unit.isAlive() ? "Yes" : "No") << ")\n";
-  }
-
-  std::cout << "\nRemoving unit from field (3, 4)...\n";
-  movedField.removeUnit(3, 4);
-  std::cout << "New movedField size: " << movedField.size() << "\n";
-
-  printSeparator("All demonstration scenarios completed successfully!");
   return 0;
 }

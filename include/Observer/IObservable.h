@@ -3,15 +3,16 @@
 #include <vector>
 
 #include "Observer/IObserver.h"
+#include "Observer/UnitEvent.h"
 
 class IObservable {
  protected:
   std::vector<IObserver*> observers;
 
  public:
-  virtual void addObserver(IObserver* observer);
-  virtual void removeObserver(IObserver* observer);
-  virtual void notify(const UnitEvent& event);
-
   virtual ~IObservable() = default;
+
+  void addObserver(IObserver* observer);
+  void removeObserver(IObserver* observer);
+  void notify(const UnitEvent& event);
 };
