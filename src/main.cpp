@@ -71,8 +71,7 @@ int main() {
 
   game.moveUnit(3, 2, 3, 1);
 
-  Unit* dazzle = field.getUnit(4, 1);
-  while (dazzle && dazzle->isAlive()) {
+  while (field.getUnit(4, 1) != nullptr && field.getUnit(4, 1)->isAlive()) {
     game.attackUnit(3, 1, 4, 1);
   }
 
