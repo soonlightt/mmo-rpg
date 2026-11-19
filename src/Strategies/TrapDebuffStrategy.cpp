@@ -16,4 +16,4 @@ void TrapDebuffStrategy::apply(Unit& unit) {
             << ", Attack: " << unit.getAttack().getValue() << std::endl;
 }
 
-std::string TrapDebuffStrategy::getName() const { return "TrapDebuff (-5% Armor & -5% Attack)"; }
+std::string TrapDebuffStrategy::getName() const { return "TrapDebuff (-5% Armor and -5% Attack)"; }
