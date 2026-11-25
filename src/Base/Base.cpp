@@ -64,6 +64,10 @@ std::shared_ptr<Unit> Base::createUnit(const UnitFactory& factory, int subType, 
     return nullptr;
   }
 
+  if (hasUpgrade("attack_upgrade")) {
+    rawUnit->modifyAttack(5);
+  }
+
   std::shared_ptr<Unit> unit = std::move(rawUnit);
   unit->addObserver(this);
   units.push_back(unit);
@@ -117,3 +121,94 @@ void Base::onUnitEvent(const UnitEvent& event) {
       break;
   }
 }
+
+bool Base::registerUnit(const std::shared_ptr<Unit>& unit) {
+  if (!unit || isDestroyed() || units.size() >= maxUnits) {
+    return false;
+  }
+  auto it = std::find(units.begin(), units.end(), unit);
+  if (it != units.end()) {
+    return false;
+  }
+  if (hasUpgrade("attack_upgrade")) {
+    unit->modifyAttack(5);
+  }
+  unit->addObserver(this);
+  units.push_back(unit);
+  return true;
+}
+
+std::shared_ptr<Building> Base::buildBuilding(const std::string& type, int buildX, int buildY,
+                                              int cost = 50) {
+  if (isDestroyed() || type.empty() || !spendResources(cost)) {
+    return nullptr;
+  }
+
+  auto building = std::make_shared<Building>(type, buildX, buildY);
+  buildings.push_back(building);
+
+  std::cout << "[Base] Built " << type << " (ID: " << building->getId() << ") at (" << buildX
+            << " ," << buildY << "). Remaining resources: " << resources << std::endl;
+
+  return building;
+}
+
+std::shared_ptr<Building> Base::findBuildingById(int buildingId) const {
+  for (const auto& b : buildings) {
+    if (b && b->getId() == buildingId) {
+      return b;
+    }
+  }
+  return nullptr;
+}
+
+const std::vector<std::shared_ptr<Building>>& Base::getBuildings() const { return buildings; }
+
+bool Base::hasUpgrade(const std::string& techId) const {
+  return researchedUpgrades.find(techId) != researchedUpgrades.end();
+}
+
+bool Base::research(const std::string& techId, int cost = 40) {
+  if (isDestroyed() || techId.empty() || hasUpgrade(techId) || !spendResources(cost)) {
+    return false;
+  }
+
+  researchedUpgrades.insert(techId);
+
+  if (techId == "attack_upgrade") {
+    for (auto& u : units) {
+      if (u && u->isAlive()) {
+        u->modifyAttack(5);
+      }
+    }
+  }
+
+  std::cout << "[Base] Researched technology '" << techId << "'. Remaining resources: " << resources
+            << std::endl;
+  return true;
+}
+
+const std::set<std::string>& Base::getResearchedUpgrades() const { return researchedUpgrades; }
+
+bool Base::distributeResources(const std::string& resourceType, const std::string& targetName,
+                               int amount) {
+  if (isDestroyed() || amount <= 0 || resourceType.empty() || targetName.empty()) {
+    return false;
+  }
+
+  bool targetExists = std::any_of(buildings.begin(), buildings.end(),
+                                  [&targetName](const std::shared_ptr<Building>& b) {
+                                    return b && b->getType() == targetName;
+                                  });
+
+  if (!targetExists || !spendResources(amount)) {
+    return false;
+  }
+
+  buildingResources[targetName + ";" + resourceType] += amount;
+  std::cout << "[Base] Distributed " << amount << " " << resourceType << " to " << targetName
+            << ". remaining base resources: " << resources << std::endl;
+  return true;
+}
+
+const std::map<std::string, int>& Base::getAllocatedResources() const { return buildingResources; }
