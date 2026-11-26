@@ -162,6 +162,17 @@ std::shared_ptr<Building> Base::findBuildingById(int buildingId) const {
   return nullptr;
 }
 
+bool Base::removeBuilding(int buildingId) {
+  auto it = std::find_if(
+      buildings.begin(), buildings.end(),
+      [buildingId](const std::shared_ptr<Building>& b) { return b && b->getId() == buildingId; });
+  if (it != buildings.end()) {
+    buildings.erase(it);
+    return true;
+  }
+  return false;
+}
+
 const std::vector<std::shared_ptr<Building>>& Base::getBuildings() const { return buildings; }
 
 bool Base::hasUpgrade(const std::string& techId) const {

@@ -54,6 +54,7 @@ class Base : public IObserver {
 
   std::shared_ptr<Building> buildBuilding(const std::string& type, int buildX, int buildY,
                                           int cost = 50);
+  bool removeBuilding(int buildingId);
 
   std::shared_ptr<Building> findBuildingById(int buildingId) const;
   const std::vector<std::shared_ptr<Building>>& getBuildings() const;
