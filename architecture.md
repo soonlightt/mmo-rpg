@@ -84,10 +84,12 @@ classDiagram
         -int health
         -int resources
         -size_t maxUnits
-        -vector~unique_ptr~Building~~ buildings
+        -vector~shared_ptr~Building~~ buildings
+        -set~string~ researchedUpgrades
         +createUnit(...)
         +buildBuilding(...)
         +research(...)
+        +distributeResources(...)
         +onUnitEvent(const UnitEvent& event)
     }
     IObserver <|.. Base
