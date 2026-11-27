@@ -27,16 +27,16 @@ int main() {
 
   std::cout << "--- PART 1: Automated Demonstration of All 10 Commands ---\n";
 
-  game.executeCommand("create PhantomAssassin at 1,0");
-  game.executeCommand("create Invoker at 3,1");
-  game.executeCommand("create Dazzle at 4,1");
+  game.executeCommand("create PhantomAssassin at 2,1");
+  game.executeCommand("create Invoker at 4,2");
+  game.executeCommand("create Dazzle at 5,2");
 
-  game.executeCommand("build barracks at 1,1");
+  game.executeCommand("build barracks at 2,2");
   game.executeCommand("produce WitchDoctor in 1");
   game.executeCommand("research attack_upgrade");
   game.executeCommand("distribute 30 gold to barracks");
 
-  game.executeCommand("move unit 1 to 2,0");
+  game.executeCommand("move unit 1 to 3,1");
   game.executeCommand("collect resource 1 by unit 1");
   game.executeCommand("heal unit 1 by 3");
   game.executeCommand("attack unit 2 -> 3");

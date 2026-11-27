@@ -80,24 +80,27 @@ bool GameMediator::createUnit(const std::string& unitType, int x, int y, int cos
   }
 
   if (!terrainMap.isValidCoord(x, y)) {
-    std::cout << "[Mediator] Create failed: invalid coordinates (" << x << ", " << y << ").\n";
+    std::cout << "[Mediator] Create failed: invalid coordinates (" << (x + 1) << ", " << (y + 1)
+              << ").\n";
     return false;
   }
 
   if ((base && x == base->getX() && y == base->getY()) || isBuildingAt(x, y)) {
-    std::cout << "[Mediator] Create failed: cell (" << x << ", " << y
+    std::cout << "[Mediator] Create failed: cell (" << (x + 1) << ", " << (y + 1)
               << ") is occupied by a building.\n";
     return false;
   }
 
   auto terrain = terrainMap.getTerrain(x, y);
   if (!terrain || !terrain->isPassable()) {
-    std::cout << "[Mediator] Create failed: terrain at (" << x << ", " << y << ") is impassable.\n";
+    std::cout << "[Mediator] Create failed: terrain at (" << (x + 1) << ", " << (y + 1)
+              << ") is impassable.\n";
     return false;
   }
 
   if (field.getUnit(x, y) != nullptr) {
-    std::cout << "[Mediator] Create failed: cell (" << x << ", " << y << ") is already occupied.\n";
+    std::cout << "[Mediator] Create failed: cell (" << (x + 1) << ", " << (y + 1)
+              << ") is already occupied.\n";
     return false;
   }
 
@@ -132,7 +135,7 @@ bool GameMediator::createUnit(const std::string& unitType, int x, int y, int cos
       placed->addObserver(base.get());
     }
     std::cout << "[Mediator] Created " << placed->getType() << " (ID: " << placed->getId()
-              << ") at (" << x << ", " << y << ").\n";
+              << ") at (" << (x + 1) << ", " << (y + 1) << ").\n";
     terrain->onEnter(*placed);
 
     NeutralObject* neutralObj = terrainMap.getNeutralObjectAt(x, y);
@@ -155,29 +158,33 @@ bool GameMediator::moveUnit(int unitId, int toX, int toY) {
 bool GameMediator::moveUnitByCoords(int fromX, int fromY, int toX, int toY) {
   Unit* unit = field.getUnit(fromX, fromY);
   if (!unit || !unit->isAlive()) {
-    std::cout << "[Mediator] Move failed: no alive unit at (" << fromX << ", " << fromY << ").\n";
+    std::cout << "[Mediator] Move failed: no alive unit at (" << (fromX + 1) << ", " << (fromY + 1)
+              << ").\n";
     return false;
   }
 
   if (!terrainMap.isValidCoord(toX, toY)) {
-    std::cout << "[Mediator] Move failed: target (" << toX << ", " << toY << ") out of bounds.\n";
+    std::cout << "[Mediator] Move failed: target (" << (toX + 1) << ", " << (toY + 1)
+              << ") out of bounds.\n";
     return false;
   }
 
   if ((base && toX == base->getX() && toY == base->getY()) || isBuildingAt(toX, toY)) {
-    std::cout << "[Mediator] Move failed: target (" << toX << ", " << toY
+    std::cout << "[Mediator] Move failed: target (" << (toX + 1) << ", " << (toY + 1)
               << ") is occupied by a building.\n";
     return false;
   }
 
   if (field.getUnit(toX, toY) != nullptr) {
-    std::cout << "[Mediator] Move failed: target (" << toX << ", " << toY << ") is occupied.\n";
+    std::cout << "[Mediator] Move failed: target (" << (toX + 1) << ", " << (toY + 1)
+              << ") is occupied.\n";
     return false;
   }
 
   auto targetTerrain = terrainMap.getTerrain(toX, toY);
   if (!targetTerrain || !targetTerrain->isPassable()) {
-    std::cout << "[Mediator] Move blocked by TerrainProxy at (" << toX << ", " << toY << ")!\n";
+    std::cout << "[Mediator] Move blocked by TerrainProxy at (" << (toX + 1) << ", " << (toY + 1)
+              << ")!\n";
     if (targetTerrain) {
       targetTerrain->onEnter(*unit);
     }
@@ -191,7 +198,8 @@ bool GameMediator::moveUnitByCoords(int fromX, int fromY, int toX, int toY) {
 
   unit->setPosition(toX, toY);
   std::cout << "[Mediator] " << unit->getType() << " (ID: " << unit->getId() << ") moved from ("
-            << fromX << ", " << fromY << ") to (" << toX << ", " << toY << ").\n";
+            << (fromX + 1) << ", " << (fromY + 1) << ") to (" << (toX + 1) << ", " << (toY + 1)
+            << ").\n";
 
   targetTerrain->onEnter(*unit);
 
@@ -208,12 +216,10 @@ bool GameMediator::attackUnit(int attackerId, int targetId) {
 
   if (!attacker || !target || !attacker->isAlive() || !target->isAlive() ||
       attackerId == targetId) {
-    std::cout << "[Modiator] Attack failed: invalid attacker or target ID.\n";
+    std::cout << "[Mediator] Attack failed: invalid attacker or target ID.\n";
     return false;
   }
 
-  int targetX = target->getX();
-  int targetY = target->getY();
   int rawDamage = attacker->getAttack().getValue();
 
   std::cout << "[Mediator] " << attacker->getType() << " (ID: " << attackerId << ") attacks "
@@ -276,13 +282,15 @@ bool GameMediator::buildBuilding(const std::string& buildingType, int x, int y, 
 
   if ((x == base->getX() && y == base->getY()) || isBuildingAt(x, y) ||
       field.getUnit(x, y) != nullptr) {
-    std::cout << "[Mediator] Build failed: cell (" << x << ", " << y << ") is already occupied.\n";
+    std::cout << "[Mediator] Build failed: cell (" << (x + 1) << ", " << (y + 1)
+              << ") is already occupied.\n";
     return false;
   }
 
   auto terrain = terrainMap.getTerrain(x, y);
   if (!terrain || !terrain->isPassable()) {
-    std::cout << "[Mediator] Build failed: terrain at (" << x << ", " << y << ") is impassable.\n";
+    std::cout << "[Mediator] Build failed: terrain at (" << (x + 1) << ", " << (y + 1)
+              << ") is impassable.\n";
     return false;
   }
 
@@ -292,8 +300,8 @@ bool GameMediator::buildBuilding(const std::string& buildingType, int x, int y, 
   }
 
   int newId = base->getBuildings().back()->getId();
-  std::cout << "[Mediator] Built " << buildingType << " (ID: " << newId << ") at (" << x << ", "
-            << y << "). Remaining resources: " << base->getResources() << ".\n";
+  std::cout << "[Mediator] Built " << buildingType << " (ID: " << newId << ") at (" << (x + 1)
+            << ", " << (y + 1) << "). Remaining resources: " << base->getResources() << ".\n";
   return true;
 }
 
@@ -365,8 +373,9 @@ std::string GameMediator::getStats(const std::string& filter) const {
   if (showAll || filter == "resources") {
     out << "=== Base & Resources ===\n";
     if (base) {
-      out << "Base at (" << base->getX() << ", " << base->getY() << ") | HP: " << base->getHealth()
-          << "/" << base->getMaxHealth() << " | Resources: " << base->getResources() << "\n";
+      out << "Base at (" << (base->getX() + 1) << ", " << (base->getY() + 1)
+          << ") | HP: " << base->getHealth() << "/" << base->getMaxHealth()
+          << " | Resources: " << base->getResources() << "\n";
       for (const auto& kv : base->getAllocatedResources()) {
         out << "  Allocated [" << kv.first << "]: " << kv.second << "\n";
       }
@@ -385,10 +394,10 @@ std::string GameMediator::getStats(const std::string& filter) const {
   if (showAll || filter == "units") {
     out << "=== Alive Units (" << field.size() << ") ===\n";
     for (const auto& u : field) {
-      out << "  ID " << u.getId() << ": " << u.getType() << " at (" << u.getX() << ", " << u.getY()
-          << ") | HP: " << u.getHealth().getValue() << "/" << u.getHealth().getMaxValue()
-          << " | ARM: " << u.getArmor().getValue() << " | ATK: " << u.getAttack().getValue()
-          << "\n";
+      out << "  ID " << u.getId() << ": " << u.getType() << " at (" << (u.getX() + 1) << ", "
+          << (u.getY() + 1) << ") | HP: " << u.getHealth().getValue() << "/"
+          << u.getHealth().getMaxValue() << " | ARM: " << u.getArmor().getValue()
+          << " | ATK: " << u.getAttack().getValue() << "\n";
     }
   }
 
@@ -396,8 +405,8 @@ std::string GameMediator::getStats(const std::string& filter) const {
     out << "=== Buildings (" << (base ? base->getBuildings().size() : 0) << ") ===\n";
     if (base) {
       for (const auto& b : base->getBuildings()) {
-        out << "  ID " << b->getId() << ": " << b->getType() << " at (" << b->getX() << ", "
-            << b->getY() << ")\n";
+        out << "  ID " << b->getId() << ": " << b->getType() << " at (" << (b->getX() + 1) << ", "
+            << (b->getY() + 1) << ")\n";
       }
     }
   }
@@ -410,28 +419,36 @@ void GameMediator::printWorld() const {
   int h = terrainMap.getHeight();
 
   std::cout << "\n=== World Map (" << w << "x" << h << ") ===\n";
+  std::cout << "    ";
+  for (int x = 0; x < w; ++x) {
+    std::cout << std::setw(2) << (x + 1) << ' ';
+  }
+  std::cout << "\n   +" << std::string(w * 3, '-') << '\n';
+
   for (int y = 0; y < h; ++y) {
+    std::cout << std::setw(2) << (y + 1) << " |";
+
     for (int x = 0; x < w; ++x) {
       Unit* unit = field.getUnit(x, y);
       if (unit && unit->isAlive()) {
-        std::cout << "\033[95m" << unit->getSymbol() << "\033[0m ";
+        std::cout << " \033[95m" << unit->getSymbol() << "\033[0m ";
         continue;
       }
       if (base && x == base->getX() && y == base->getY()) {
-        std::cout << "\033[94mB\033[0m ";
+        std::cout << " \033[94mB\033[0m ";
         continue;
       }
       if (isBuildingAt(x, y)) {
-        std::cout << "\033[93mH\033[0m ";
+        std::cout << " \033[93mH\033[0m ";
         continue;
       }
       NeutralObject* neutralObj = terrainMap.getNeutralObjectAt(x, y);
       if (neutralObj) {
-        std::cout << neutralObj->getColoredSymbol() << ' ';
+        std::cout << ' ' << neutralObj->getColoredSymbol() << ' ';
         continue;
       }
       auto cell = terrainMap.getTerrain(x, y);
-      std::cout << (cell ? cell->getSymbol() : '?') << ' ';
+      std::cout << ' ' << (cell ? cell->getSymbol() : '?') << ' ';
     }
     std::cout << '\n';
   }
