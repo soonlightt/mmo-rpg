@@ -6,21 +6,21 @@ GameMediator::GameMediator(int width, int height, size_t maxUnits, int baseX, in
       field(width, height, maxUnits),
       terrainMap(width, height) {}
 
-GameField& GameMediator::getFeild() { return field; }
-const GameField& GameMediator::getFeild() const { return field; }
+GameField& GameMediator::getField() { return field; }
+const GameField& GameMediator::getField() const { return field; }
 TerrainMap& GameMediator::getTerrainMap() { return terrainMap; }
 const TerrainMap& GameMediator::getTerrainMap() const { return terrainMap; }
 std::shared_ptr<Base> GameMediator::getBase() const { return base; }
 
 bool GameMediator::resolveUnitType(const std::string& unitType, const UnitFactory*& outFactory,
                                    int& outSubType) const {
-  if (unitType == "carry" || unitType == "Carry" || unitType == "PhantomAssassin" ||
-      unitType == "phantom_assassin") {
+  if (unitType == "Lifestealer" || unitType == "lifestealer") {
     outFactory = &carryFactory;
     outSubType = 1;
     return true;
   }
-  if (unitType == "Lifestealer" || unitType == "lifestealer") {
+  if (unitType == "carry" || unitType == "Carry" || unitType == "PhantomAssassin" ||
+      unitType == "phantom_assassin") {
     outFactory = &carryFactory;
     outSubType = 2;
     return true;
@@ -36,13 +36,13 @@ bool GameMediator::resolveUnitType(const std::string& unitType, const UnitFactor
     outSubType = 2;
     return true;
   }
-  if (unitType == "support" || unitType == "Support" || unitType == "WitchDoctor" ||
-      unitType == "witch_doctor") {
+  if (unitType == "Dazzle" || unitType == "dazzle") {
     outFactory = &supportFactory;
     outSubType = 1;
     return true;
   }
-  if (unitType == "Dazzle" || unitType == "dazzle") {
+  if (unitType == "support" || unitType == "Support" || unitType == "WitchDoctor" ||
+      unitType == "witch_doctor") {
     outFactory = &supportFactory;
     outSubType = 2;
     return true;
@@ -221,10 +221,14 @@ bool GameMediator::attackUnit(int attackerId, int targetId) {
             << " raw damage.\n";
   target->takeDamage(rawDamage);
 
-  if (!target->isAlive()) {
-    std::cout << "[Mediator] " << target->getType() << " (ID: " << targetId
+  if (target->isAlive()) {
+    std::cout << "[Mediator] " << target->getType() << " (ID: " << target->getId()
+              << ") remaining HP: " << target->getHealth().getValue() << "/"
+              << target->getHealth().getMaxValue() << "\n";
+  } else {
+    std::cout << "[Mediator] " << target->getType() << " (ID: " << target->getId()
               << ") was destroyed and removed from field.\n";
-    field.removeUnit(targetX, targetY);
+    field.removeUnit(target->getX(), target->getY());
   }
   return true;
 }
@@ -278,9 +282,18 @@ bool GameMediator::buildBuilding(const std::string& buildingType, int x, int y, 
 
   auto terrain = terrainMap.getTerrain(x, y);
   if (!terrain || !terrain->isPassable()) {
-    std::cout << "[Mediator] Build failed: insufficient resources.\n";
+    std::cout << "[Mediator] Build failed: terrain at (" << x << ", " << y << ") is impassable.\n";
     return false;
   }
+
+  if (!base->buildBuilding(buildingType, x, y, cost)) {
+    std::cout << "[Mediator] Build failed: insufficient resources or invalid building.\n";
+    return false;
+  }
+
+  int newId = base->getBuildings().back()->getId();
+  std::cout << "[Mediator] Built " << buildingType << " (ID: " << newId << ") at (" << x << ", "
+            << y << "). Remaining resources: " << base->getResources() << ".\n";
   return true;
 }
 

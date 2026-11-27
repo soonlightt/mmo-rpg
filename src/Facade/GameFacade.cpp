@@ -1,17 +1,35 @@
 #include "Facade/GameFacade.h"
 
-namespace {
-bool parseCoords(const std::string& token, int& outX, int& outY) {
-  std::string cleaned = token;
-  std::replace(cleaned.begin(), cleaned.end(), ',', ' ');
-  std::istringstream iss(cleaned);
-  return static_cast<bool>(iss >> outX >> outY);
-}
-}  // namespace
-
 GameFacade::GameFacade(int width, int height, size_t maxUnits, int baseX, int baseY, int baseHealth,
                        size_t baseMaxUnits, int baseResources)
-    : mediator(width, height, maxUnits, baseX, baseY, baseHealth, baseMaxUnits, baseResources) {}
+    : mediator(width, height, maxUnits, baseX, baseY, baseHealth, baseMaxUnits, baseResources) {
+  initHandlerChain();
+}
+
+void GameFacade::initHandlerChain() {
+  auto create = std::make_unique<CreateHandler>();
+  auto move = std::make_unique<MoveHandler>();
+  auto attack = std::make_unique<AttackHandler>();
+  auto collect = std::make_unique<CollectHandler>();
+  auto heal = std::make_unique<HealHandler>();
+  auto build = std::make_unique<BuildHandler>();
+  auto research = std::make_unique<ResearchHandler>();
+  auto produce = std::make_unique<ProduceHandler>();
+  auto stats = std::make_unique<StatsHandler>();
+  auto help = std::make_unique<HelpHandler>();
+
+  create->setNext(std::move(move))
+      ->setNext(std::move(attack))
+      ->setNext(std::move(collect))
+      ->setNext(std::move(heal))
+      ->setNext(std::move(build))
+      ->setNext(std::move(research))
+      ->setNext(std::move(produce))
+      ->setNext(std::move(stats))
+      ->setNext(std::move(help));
+
+  handlerChain = std::move(create);
+}
 
 GameMediator& GameFacade::getMediator() { return mediator; }
 const GameMediator& GameFacade::getMediator() const { return mediator; }
@@ -68,7 +86,8 @@ bool GameFacade::produceUnit(const std::string& unitType, int buildingId, int co
 }
 
 void GameFacade::showStats(const std::string& filter) const {
-  std::cout << mediator.getStats(filter);
+  StatsCommand cmd(const_cast<GameMediator&>(mediator), filter);
+  cmd.execute();
 }
 
 bool GameFacade::undoLastCommand() {
@@ -110,101 +129,6 @@ void GameFacade::printHelp() const {
             << "  undo | history | map | help | exit\n";
 }
 
-bool GameFacade::handleCreate(std::istringstream& iss) {
-  std::string unitType, kwAt, coordToken;
-  int x = 0, y = 0;
-  if (iss >> unitType >> kwAt >> coordToken && parseCoords(coordToken, x, y)) {
-    return createUnit(unitType, x, y);
-  }
-  std::cout << "[Facade] Usage: create <unitType> at <x>,<y>\n";
-  return false;
-}
-
-bool GameFacade::handleMove(std::istringstream& iss) {
-  std::string kwUnit, kwTo, coordToken;
-  int id = 0, x = 0, y = 0;
-  if (iss >> kwUnit >> id >> kwTo >> coordToken && parseCoords(coordToken, x, y)) {
-    return moveUnit(id, x, y);
-  }
-  std::cout << "[Facade] Usage: move unit <id> to <x>,<y>\n";
-  return false;
-}
-
-bool GameFacade::handleAttack(std::istringstream& iss) {
-  std::string kwUnit, arrow;
-  int attackerId = 0, targetId = 0;
-  if (iss >> kwUnit >> attackerId >> arrow >> targetId) {
-    return attackUnit(attackerId, targetId);
-  }
-  std::cout << "[Facade] Usage: attack unit <attackerId> -> <targetId>\n";
-  return false;
-}
-
-bool GameFacade::handleCollect(std::istringstream& iss) {
-  std::string kwRes, kwBy, kwUnit;
-  int resId = 0, unitId = 0;
-  if (iss >> kwRes >> resId >> kwBy >> kwUnit >> unitId) {
-    return collectResource(unitId, resId);
-  }
-  std::cout << "[Facade] Usage: collect resource <resId> by unit <unitId>\n";
-  return false;
-}
-
-bool GameFacade::handleHeal(std::istringstream& iss) {
-  std::string kwUnit, kwBy;
-  int targetId = 0, healerId = 0;
-  if (iss >> kwUnit >> targetId >> kwBy >> healerId) {
-    return healUnit(healerId, targetId);
-  }
-  std::cout << "[Facade] Usage: heal unit <targetId> by <healerId>\n";
-  return false;
-}
-
-bool GameFacade::handleBuild(std::istringstream& iss) {
-  std::string buildingType, kwAt, coordToken;
-  int x = 0, y = 0;
-  if (iss >> buildingType >> kwAt >> coordToken && parseCoords(coordToken, x, y)) {
-    return buildBuilding(buildingType, x, y);
-  }
-  std::cout << "[Facade] Usage: build <buildingType> at <x>,<y>\n";
-  return false;
-}
-
-bool GameFacade::handleResearch(std::istringstream& iss) {
-  std::string techId;
-  if (iss >> techId) {
-    return research(techId);
-  }
-  std::cout << "[Facade] Usage: research <techId>\n";
-  return false;
-}
-
-bool GameFacade::handleDistribute(std::istringstream& iss) {
-  int amount = 0;
-  std::string resType, kwTo, targetName;
-  if (iss >> amount >> resType >> kwTo >> targetName) {
-    return distributeResources(resType, targetName, amount);
-  }
-  std::cout << "[Facade] Usage: distribute <amount> <resType> to <targetBuilding>\n";
-  return false;
-}
-
-bool GameFacade::handleProduce(std::istringstream& iss) {
-  std::string unitType, kwIn;
-  int buildingId = 0;
-  if (iss >> unitType >> kwIn >> buildingId) {
-    return produceUnit(unitType, buildingId);
-  }
-  std::cout << "[Facade] Usage: produce <unitType> in <buildingId>\n";
-  return false;
-}
-
-bool GameFacade::handleStats(std::istringstream& iss) {
-  std::string filter;
-  iss >> filter;
-  return runCommand(std::make_unique<StatsCommand>(mediator, filter), false);
-}
-
 bool GameFacade::executeCommand(const std::string& input) {
   std::istringstream iss(input);
   std::string action;
@@ -212,31 +136,15 @@ bool GameFacade::executeCommand(const std::string& input) {
     return false;
   }
 
-  if (action == "create") return handleCreate(iss);
-  if (action == "move") return handleMove(iss);
-  if (action == "attack") return handleAttack(iss);
-  if (action == "collect") return handleCollect(iss);
-  if (action == "heal") return handleHeal(iss);
-  if (action == "build") return handleBuild(iss);
-  if (action == "research") return handleResearch(iss);
-  if (action == "distribute") return handleDistribute(iss);
-  if (action == "produce") return handleProduce(iss);
-  if (action == "stats") return handleStats(iss);
-
-  if (action == "undo") return undoLastCommand();
-  if (action == "history") {
-    printHistory();
-    return true;
-  }
-  if (action == "map") {
-    printWorld();
-    return true;
-  }
-  if (action == "help") {
-    printHelp();
+  if (handlerChain && handlerChain->handle(input, *this)) {
     return true;
   }
 
-  std::cout << "[Facade] Unknown command '" << action << "'. Type 'help' for commands list.\n";
+  if (action != "create" && action != "move" && action != "attack" && action != "collect" &&
+      action != "heal" && action != "build" && action != "distribute" && action != "research" &&
+      action != "produce" && action != "stats" && action != "help" && action != "undo" &&
+      action != "history" && action != "map") {
+    std::cout << "[Facade] Unknown command '" << action << "'. Type 'help' for commands list.\n";
+  }
   return false;
 }

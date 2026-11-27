@@ -139,7 +139,7 @@ bool Base::registerUnit(const std::shared_ptr<Unit>& unit) {
 }
 
 std::shared_ptr<Building> Base::buildBuilding(const std::string& type, int buildX, int buildY,
-                                              int cost = 50) {
+                                              int cost) {
   if (isDestroyed() || type.empty() || !spendResources(cost)) {
     return nullptr;
   }
@@ -179,7 +179,7 @@ bool Base::hasUpgrade(const std::string& techId) const {
   return researchedUpgrades.find(techId) != researchedUpgrades.end();
 }
 
-bool Base::research(const std::string& techId, int cost = 40) {
+bool Base::research(const std::string& techId, int cost) {
   if (isDestroyed() || techId.empty() || hasUpgrade(techId) || !spendResources(cost)) {
     return false;
   }

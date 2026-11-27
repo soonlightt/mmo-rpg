@@ -1,6 +1,5 @@
 #pragma once
 
-#include <algorithm>
 #include <iostream>
 #include <memory>
 #include <sstream>
@@ -19,25 +18,27 @@
 #include "Commands/ProduceUnitCommand.h"
 #include "Commands/ResearchCommand.h"
 #include "Commands/StatsCommand.h"
+#include "Handlers/AttackHandler.h"
+#include "Handlers/BuildHandler.h"
+#include "Handlers/CollectHandler.h"
+#include "Handlers/CreateHandler.h"
+#include "Handlers/Handler.h"
+#include "Handlers/HealHandler.h"
+#include "Handlers/HelpHandler.h"
+#include "Handlers/MoveHandler.h"
+#include "Handlers/ProduceHandler.h"
+#include "Handlers/ResearchHandler.h"
+#include "Handlers/StatsHandler.h"
 #include "Mediator/GameMediator.h"
 
 class GameFacade {
  private:
   GameMediator mediator;
   std::vector<std::unique_ptr<ICommand>> history;
+  std::unique_ptr<Handler> handlerChain;
 
   bool runCommand(std::unique_ptr<ICommand> cmd, bool recordInHistory = true);
-
-  bool handleCreate(std::istringstream& iss);
-  bool handleMove(std::istringstream& iss);
-  bool handleAttack(std::istringstream& iss);
-  bool handleCollect(std::istringstream& iss);
-  bool handleHeal(std::istringstream& iss);
-  bool handleBuild(std::istringstream& iss);
-  bool handleResearch(std::istringstream& iss);
-  bool handleDistribute(std::istringstream& iss);
-  bool handleProduce(std::istringstream& iss);
-  bool handleStats(std::istringstream& iss);
+  void initHandlerChain();
 
  public:
   GameFacade(int width = 15, int height = 15, size_t maxUnits = 20, int baseX = 0, int baseY = 0,

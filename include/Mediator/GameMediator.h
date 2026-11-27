@@ -33,8 +33,8 @@ class GameMediator {
                int baseHealth = 500, size_t baseMaxUnits = 10, int baseResources = 200);
   ~GameMediator() { field.clear(); }
 
-  GameField& getFeild();
-  const GameField& getFeild() const;
+  GameField& getField();
+  const GameField& getField() const;
   TerrainMap& getTerrainMap();
   const TerrainMap& getTerrainMap() const;
   std::shared_ptr<Base> getBase() const;

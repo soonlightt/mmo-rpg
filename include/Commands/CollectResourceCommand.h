@@ -12,6 +12,7 @@ class CollectResourceCommand : public ICommand {
   int resourceId;
   bool executed = false;
 
+ public:
   CollectResourceCommand(GameMediator& med, int unit, int resource);
 
   bool execute() override;

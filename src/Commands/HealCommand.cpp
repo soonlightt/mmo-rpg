@@ -5,7 +5,7 @@ HealCommand::HealCommand(GameMediator& med, int healer, int target)
 
 bool HealCommand::execute() {
   Unit* target = nullptr;
-  for (auto& u : mediator.getFeild()) {
+  for (auto& u : mediator.getField()) {
     if (u.getId() == targetId) {
       target = &u;
       break;
@@ -22,7 +22,7 @@ bool HealCommand::undo() {
   if (!executed || prevHp <= 0) {
     return false;
   }
-  for (auto& u : mediator.getFeild()) {
+  for (auto& u : mediator.getField()) {
     if (u.getId() == targetId && u.isAlive()) {
       int diff = u.getHealth().getValue() - prevHp;
       if (diff > 0) {

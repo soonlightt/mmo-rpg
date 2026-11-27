@@ -4,7 +4,7 @@ MoveUnitCommand::MoveUnitCommand(GameMediator& med, int id, int targetX, int tar
     : mediator(med), unitId(id), toX(targetX), toY(targetY) {}
 
 bool MoveUnitCommand::execute() {
-  for (auto& u : mediator.getFeild()) {
+  for (auto& u : mediator.getField()) {
     if (u.getId() == unitId) {
       prevX = u.getX();
       prevY = u.getY();
